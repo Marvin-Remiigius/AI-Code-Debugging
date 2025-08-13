@@ -37,7 +37,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, l
     // Update decorations
     const newDecorations = analysis.map(item => {
       const lineContent = editor.getModel()?.getLineContent(item.line) || '';
-      const startColumn = (lineContent.match(/\S/)?.index ?? 0) + 1; // First non-whitespace char
+      const startColumn = (lineContent.match(/\\S/)?.index ?? 0) + 1; // First non-whitespace char
       const endColumn = lineContent.length + 1;
 
       return {
@@ -89,19 +89,21 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, l
     <Editor
       height="100%"
       language={language}
-      theme="light"
+      theme="light" // Force light theme
       value={code}
       onChange={onCodeChange}
       onMount={handleEditorDidMount}
       options={{
-        fontFamily: 'monospace',
+        fontFamily: "'Courier New', Courier, monospace",
         fontSize: 14,
-        minimap: { enabled: true, autohide: true },
+        minimap: { enabled: false },
         scrollBeyondLastLine: false,
         wordWrap: 'on',
         lineNumbers: 'on',
         automaticLayout: true,
         padding: { top: 16 },
+        renderLineHighlight: "none",
+        overviewRulerLanes: 0
       }}
       loading={<Skeleton className="w-full h-full" />}
     />
