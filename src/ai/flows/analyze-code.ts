@@ -39,19 +39,45 @@ const analyzeCodePrompt = ai.definePrompt({
   name: 'analyzeCodePrompt',
   input: {schema: AnalyzeCodeInputSchema},
   output: {schema: AnalyzeCodeOutputSchema},
-  prompt: `You are an expert code review assistant. Analyze the following code for bugs and areas for improvement. Your task is to identify issues and return them in a structured JSON array format. For each issue, provide the precise location with start and end line and column numbers.
+  prompt: `You are an advanced code analysis AI. Your primary function is to analyze a given code snippet and return a structured JSON array of all issues found. The accuracy of the line and column numbers in your response is critical for the application's functionality.
 
-Each object in the array must contain:
-- 'startLine': The line number where the issue begins.
-- 'startColumn': The column number on the start line where the issue begins.
-- 'endLine': The line number where the issue ends.
-- 'endColumn': The column number on the end line where the issue ends.
-- 'severity': 'error' for breaking issues, 'suggestion' for improvements.
-- 'message': A clear explanation of the issue.
+## MANDATORY RULES:
+1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON array. Do not include any introductory text, explanations, or markdown formatting like \`\`\`json before or after the array.
+2.  **PRECISE LOCATION:** For each issue, you must provide the exact start and end line and column numbers. The line numbers must be relative to the beginning of the code provided below. This is not optional.
+3.  **COMPLETE OBJECTS:** Every object in the array must contain all required keys: 'startLine', 'startColumn', 'endLine', 'endColumn', 'severity' (either "error" or "suggestion"), and 'message'.
+4.  **NO DOCSTRING SUGGESTIONS:** Do not suggest adding docstrings or comments to the code.
 
-Do not suggest adding docstrings or comments. Do not include any text, explanations, or markdown formatting outside of the JSON array itself.
+## EXAMPLE OF PERFECT OUTPUT:
+If the input code is:
+\`\`\`python
+1: def my_func()
+2:     name = "AI"
+3:     print(nam)
+\`\`\`
+Your JSON output MUST be exactly this:
+\`\`\`json
+[
+  {
+    "startLine": 1,
+    "startColumn": 13,
+    "endLine": 1,
+    "endColumn": 13,
+    "severity": "error",
+    "message": "SyntaxError: Missing colon ':' at the end of the function definition."
+  },
+  {
+    "startLine": 3,
+    "startColumn": 11,
+    "endLine": 3,
+    "endColumn": 14,
+    "severity": "error",
+    "message": "NameError: The variable 'nam' is not defined. Did you mean 'name'?"
+  }
+]
+\`\`\`
+TASK:
+Now, analyze the following code snippet and provide your response according to all the rules specified above.
 
-Here is the code:
 \`\`\`
 {{{code}}}
 \`\`\`
