@@ -89,12 +89,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, l
     <Editor
       height="100%"
       language={language}
-      theme="vs-dark"
+      theme="light"
       value={code}
       onChange={onCodeChange}
       onMount={handleEditorDidMount}
       options={{
-        fontFamily: 'var(--font-code)',
+        fontFamily: 'monospace',
         fontSize: 14,
         minimap: { enabled: true, autohide: true },
         scrollBeyondLastLine: false,

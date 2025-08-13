@@ -89,10 +89,12 @@ export default function Home() {
     const customConsole = {
         log: (...args: any[]) => {
             newOutput.push({ type: 'log', message: args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)).join(' ') });
+            setOutput([...newOutput]);
             originalConsoleLog(...args);
         },
         error: (...args: any[]) => {
             newOutput.push({ type: 'error', message: args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)).join(' ') });
+            setOutput([...newOutput]);
             originalConsoleError(...args);
         }
     };
@@ -110,8 +112,7 @@ export default function Home() {
         runner(customConsole);
     } catch (e: any) {
       newOutput.push({ type: 'error', message: e.message });
-    } finally {
-      setOutput(newOutput);
+      setOutput([...newOutput]);
     }
   };
 
@@ -124,7 +125,7 @@ export default function Home() {
       <Header />
       <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 md:p-6 overflow-hidden">
         <div className="md:col-span-2 flex flex-col gap-4">
-            <div className="flex-1 relative rounded-lg border border-border shadow-lg overflow-hidden">
+            <div className="flex-1 relative rounded-lg border border-border overflow-hidden">
                 <CodeEditor 
                     code={code} 
                     onCodeChange={(value) => setCode(value || '')} 
@@ -179,7 +180,7 @@ export default function Home() {
                                     <h3 className="font-semibold mb-2 flex items-center"><AlertCircle className="mr-2 text-destructive" /> Errors</h3>
                                     <ul className="space-y-2">
                                         {errors.map((item, index) => (
-                                            <li key={`error-${index}`} className="text-sm p-2 bg-destructive/10 rounded-md">
+                                            <li key={`error-${index}`} className="text-sm p-2 bg-destructive/10">
                                                 <span className="font-bold">L{item.line}:</span> {item.message}
                                             </li>
                                         ))}
@@ -191,7 +192,7 @@ export default function Home() {
                                     <h3 className="font-semibold mb-2 flex items-center"><Lightbulb className="mr-2 text-yellow-500" /> Suggestions</h3>
                                     <ul className="space-y-2">
                                         {suggestions.map((item, index) => (
-                                            <li key={`suggestion-${index}`} className="text-sm p-2 bg-yellow-500/10 rounded-md">
+                                            <li key={`suggestion-${index}`} className="text-sm p-2 bg-yellow-500/10">
                                                 <span className="font-bold">L{item.line}:</span> {item.message}
                                             </li>
                                         ))}
