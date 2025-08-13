@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wand2, Loader2, Play, AlertCircle, Lightbulb } from 'lucide-react';
+import { Wand2, Loader2, Play, AlertCircle, Lightbulb, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
@@ -49,21 +49,17 @@ export default function Home() {
   const [output, setOutput] = useState<OutputLine[]>([]);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('results');
+  const [analysisRun, setAnalysisRun] = useState(false);
 
   const handleAnalyzeCode = async () => {
     setIsLoading(true);
     setAnalysis([]);
     setActiveTab('results');
+    setAnalysisRun(true);
     try {
       const result = await runCodeAnalysis({ code });
       if (result.success && result.data) {
         setAnalysis(result.data);
-        if (result.data.length === 0) {
-            toast({
-                title: "All Clear!",
-                description: "No issues found in your code.",
-            });
-        }
       } else {
         toast({
           variant: 'destructive',
@@ -102,6 +98,10 @@ export default function Home() {
 
 
     setIsExecuting(false);
+  };
+
+  const handleDismissAnalysisItem = (itemToDismiss: {line: number; message: string}) => {
+    setAnalysis(prev => prev.filter(item => !(item.line === itemToDismiss.line && item.message === itemToDismiss.message)));
   };
 
 
@@ -173,8 +173,13 @@ export default function Home() {
                                     <h3 className="font-semibold mb-2 flex items-center text-red-600"><AlertCircle className="mr-2" /> Errors</h3>
                                     <ul className="space-y-2">
                                         {errors.map((item, index) => (
-                                            <li key={`error-${index}`} className="text-sm p-2 bg-red-100 rounded-none">
-                                                <span className="font-bold">L{item.line}:</span> {item.message}
+                                            <li key={`error-${index}`} className="flex justify-between items-start text-sm p-2 bg-red-100 rounded-none">
+                                                <div>
+                                                    <span className="font-bold">L{item.line}:</span> {item.message}
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
                                             </li>
                                         ))}
                                     </ul>
@@ -185,13 +190,22 @@ export default function Home() {
                                     <h3 className="font-semibold mb-2 flex items-center text-yellow-600"><Lightbulb className="mr-2" /> Suggestions</h3>
                                     <ul className="space-y-2">
                                         {suggestions.map((item, index) => (
-                                            <li key={`suggestion-${index}`} className="text-sm p-2 bg-yellow-100 rounded-none">
-                                                <span className="font-bold">L{item.line}:</span> {item.message}
+                                            <li key={`suggestion-${index}`} className="flex justify-between items-start text-sm p-2 bg-yellow-100 rounded-none">
+                                                <div>
+                                                    <span className="font-bold">L{item.line}:</span> {item.message}
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                             )}
+                            </div>
+                        ) : analysisRun ? (
+                            <div className="text-center text-green-600 font-bold pt-10">
+                                Your code is good to go!!
                             </div>
                         ) : (
                             <div className="text-center text-gray-500 pt-10">
