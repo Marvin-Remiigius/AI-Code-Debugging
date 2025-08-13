@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 const defaultCode = `// Your C or Python code here!`;
+const ANALYSIS_INTERVAL = 45; // in seconds
 
 type OutputLine = {
   type: 'log' | 'error';
@@ -40,7 +41,25 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('results');
   const [analysisRun, setAnalysisRun] = useState(false);
   const [isAutoAnalysisPaused, setIsAutoAnalysisPaused] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [countdown, setCountdown] = useState(ANALYSIS_INTERVAL);
+
+  const resetCountdown = () => {
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    setCountdown(ANALYSIS_INTERVAL);
+    
+    if (!isAutoAnalysisPaused) {
+      countdownIntervalRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            return ANALYSIS_INTERVAL;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  };
 
   const handleAnalyzeCode = async (isAuto: boolean = false) => {
     if (isLoading) return;
@@ -76,25 +95,29 @@ export default function Home() {
       }
     } finally {
       setIsLoading(false);
+      if (!isAuto) {
+         resetCountdown();
+      }
     }
   };
 
   useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    if (analysisIntervalRef.current) clearInterval(analysisIntervalRef.current);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
     if (!isAutoAnalysisPaused) {
-      intervalRef.current = setInterval(() => {
-        handleAnalyzeCode(true);
-      }, 45000);
+        resetCountdown();
+        analysisIntervalRef.current = setInterval(() => {
+            handleAnalyzeCode(true);
+        }, ANALYSIS_INTERVAL * 1000);
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+        if (analysisIntervalRef.current) clearInterval(analysisIntervalRef.current);
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, [code, isAutoAnalysisPaused]);
+
 
   const handleRunCode = async () => {
     setOutput([]);
@@ -167,10 +190,17 @@ export default function Home() {
                         {isExecuting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2" />}
                         Run
                     </Button>
-                    <Button onClick={() => setIsAutoAnalysisPaused(!isAutoAnalysisPaused)} variant="outline" className="rounded-none">
-                      {isAutoAnalysisPaused ? <Play className="mr-2" /> : <Pause className="mr-2" />}
-                      {isAutoAnalysisPaused ? 'Resume' : 'Pause'} Auto
-                    </Button>
+                    <div className="flex flex-col items-center">
+                      <Button onClick={() => setIsAutoAnalysisPaused(!isAutoAnalysisPaused)} variant="outline" className="rounded-none">
+                        {isAutoAnalysisPaused ? <Play className="mr-2" /> : <Pause className="mr-2" />}
+                        {isAutoAnalysisPaused ? 'Resume' : 'Pause'} Auto
+                      </Button>
+                       {!isAutoAnalysisPaused && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Next in: {countdown}s
+                        </div>
+                      )}
+                    </div>
                     <Button onClick={() => handleAnalyzeCode(false)} disabled={isLoading || !code} size="lg" className="bg-blue-400 hover:bg-blue-500 text-black rounded-none">
                         {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
