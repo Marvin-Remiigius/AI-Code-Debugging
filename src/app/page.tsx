@@ -20,16 +20,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const defaultCode = `function factorial(n) {
-  if (n = 0) { // This should be a comparison
+  if (n === 0) {
     return 1;
   } else {
     return n * factorial(n - 1);
   }
 }
 
-// Inefficient loop
-for (var i = 1; i < 10; i++) {
-  console.log("Hello) // Missing closing quote
+console.log('Factorial of 5 is:', factorial(5));
+
+for (var i = 1; i < 5; i++) {
+  console.log("Hello, world!");
 }
 
 const unusedVar = 10;`;
@@ -85,23 +86,35 @@ export default function Home() {
     const originalConsoleLog = console.log;
     const originalConsoleError = console.error;
 
-    console.log = (...args) => {
-      newOutput.push({ type: 'log', message: args.map(arg => JSON.stringify(arg)).join(' ') });
+    const customConsole = {
+        log: (...args: any[]) => {
+            newOutput.push({ type: 'log', message: args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)).join(' ') });
+            originalConsoleLog(...args);
+        },
+        error: (...args: any[]) => {
+            newOutput.push({ type: 'error', message: args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)).join(' ') });
+            originalConsoleError(...args);
+        }
     };
-    console.error = (...args) => {
-       newOutput.push({ type: 'error', message: args.map(arg => JSON.stringify(arg)).join(' ') });
-    };
-
+    
     try {
-      new Function(code)();
+        const functionBody = `
+            const console = { log: customConsole.log, error: customConsole.error };
+            try {
+                ${code}
+            } catch(e) {
+                console.error(e.message);
+            }
+        `;
+        const runner = new Function('customConsole', functionBody);
+        runner(customConsole);
     } catch (e: any) {
       newOutput.push({ type: 'error', message: e.message });
     } finally {
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
       setOutput(newOutput);
     }
   };
+
 
   const errors = analysis.filter(a => a.severity === 'error');
   const suggestions = analysis.filter(a => a.severity === 'suggestion');
