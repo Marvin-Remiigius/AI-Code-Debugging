@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { Wand2, Loader2, Play, AlertCircle, Lightbulb, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Wand2, Loader2, Play, AlertCircle, Lightbulb, X, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
@@ -39,11 +39,16 @@ export default function Home() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('results');
   const [analysisRun, setAnalysisRun] = useState(false);
+  const [isAutoAnalysisPaused, setIsAutoAnalysisPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleAnalyzeCode = async () => {
+  const handleAnalyzeCode = async (isAuto: boolean = false) => {
+    if (isLoading) return;
     setIsLoading(true);
-    setAnalysis([]);
-    setActiveTab('results');
+    if (!isAuto) {
+      setAnalysis([]);
+      setActiveTab('results');
+    }
     setAnalysisRun(true);
     try {
       const result = await runCodeAnalysis({ code });
@@ -54,7 +59,7 @@ export default function Home() {
         } else {
           setAnalysis(result.data);
         }
-      } else {
+      } else if (!isAuto) {
         toast({
           variant: 'destructive',
           title: 'Analysis Failed',
@@ -62,15 +67,34 @@ export default function Home() {
         });
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not connect to the analysis service.',
-      });
+      if (!isAuto) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not connect to the analysis service.',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    if (!isAutoAnalysisPaused) {
+      intervalRef.current = setInterval(() => {
+        handleAnalyzeCode(true);
+      }, 45000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [code, isAutoAnalysisPaused]);
 
   const handleRunCode = async () => {
     setOutput([]);
@@ -139,11 +163,15 @@ export default function Home() {
                     </Select>
                 </div>
                 <div className="flex gap-2">
-                    <Button onClick={handleRunCode} disabled={isRunDisabled} variant="outline" className="bg-green-400 hover:bg-green-500 text-black border-green-700 rounded-none">
+                    <Button onClick={() => handleRunCode()} disabled={isRunDisabled} variant="outline" className="bg-green-400 hover:bg-green-500 text-black border-green-700 rounded-none">
                         {isExecuting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2" />}
                         Run
                     </Button>
-                    <Button onClick={handleAnalyzeCode} disabled={isLoading || !code} size="lg" className="bg-blue-400 hover:bg-blue-500 text-black rounded-none">
+                    <Button onClick={() => setIsAutoAnalysisPaused(!isAutoAnalysisPaused)} variant="outline" className="rounded-none">
+                      {isAutoAnalysisPaused ? <Play className="mr-2" /> : <Pause className="mr-2" />}
+                      {isAutoAnalysisPaused ? 'Resume' : 'Pause'} Auto
+                    </Button>
+                    <Button onClick={() => handleAnalyzeCode(false)} disabled={isLoading || !code} size="lg" className="bg-blue-400 hover:bg-blue-500 text-black rounded-none">
                         {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
@@ -165,34 +193,17 @@ export default function Home() {
                     </CardHeader>
                     <TabsContent value="results" className="flex-1 overflow-auto">
                       <ScrollArea className="h-full px-6">
-                        {isLoading ? (
+                        {isLoading && !analysisRun ? (
                             <div className="text-center text-gray-500 pt-10">Analyzing...</div>
                         ) : !analysisRun ? (
                              <div className="text-center text-gray-500 pt-10">
                                 Run analysis to see results.
                             </div>
-                        ) : errors.length === 0 ? (
+                        ) : errors.length === 0 && suggestions.length === 0 ? (
                             <div className="space-y-4">
                                 <div className="text-center text-green-600 font-bold pt-10 pb-4">
                                     Your code is good to go!!
                                 </div>
-                                {suggestions.length > 0 && (
-                                    <div>
-                                        <h3 className="font-semibold mb-2 flex items-center text-yellow-600"><Lightbulb className="mr-2" /> Suggestions</h3>
-                                        <ul className="space-y-2">
-                                            {suggestions.map((item, index) => (
-                                                <li key={`suggestion-${index}`} className="flex justify-between items-start text-sm p-2 bg-yellow-100 rounded-none">
-                                                    <div>
-                                                        <span className="font-bold">L{item.startLine}:</span> {item.message}
-                                                    </div>
-                                                    <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
                             </div>
                         ) : (
                            <div className="space-y-4">
