@@ -6,7 +6,10 @@ import type * as monaco from 'monaco-editor';
 import { Skeleton } from './ui/skeleton';
 
 type AnalysisResult = {
-  line: number;
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
   severity: 'error' | 'suggestion';
   message: string;
 };
@@ -36,12 +39,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, l
 
     // Update decorations
     const newDecorations = analysis.map(item => {
-      const lineContent = editor.getModel()?.getLineContent(item.line) || '';
-      const startColumn = (lineContent.match(/\\S/)?.index ?? 0) + 1; // First non-whitespace char
-      const endColumn = lineContent.length + 1;
-
       return {
-        range: new monacoInstance.Range(item.line, startColumn, item.line, endColumn),
+        range: new monacoInstance.Range(item.startLine, item.startColumn, item.endLine, item.endColumn),
         options: {
           className: item.severity === 'error' ? 'inline-error-highlight' : 'inline-suggestion-highlight',
           overviewRuler: {
@@ -64,10 +63,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, l
     }
     hoverProviderRef.current = monacoInstance.languages.registerHoverProvider(language, {
       provideHover: (model, position) => {
-        const issue = analysis.find(a => a.line === position.lineNumber);
+        const issue = analysis.find(a => 
+            position.lineNumber >= a.startLine &&
+            position.lineNumber <= a.endLine
+        );
         if (issue) {
           return {
-            range: new monacoInstance.Range(position.lineNumber, 1, position.lineNumber, model.getLineMaxColumn(position.lineNumber)),
+            range: new monacoInstance.Range(issue.startLine, issue.startColumn, issue.endLine, issue.endColumn),
             contents: [
               { value: `**${issue.severity.toUpperCase()}**` },
               { value: issue.message },

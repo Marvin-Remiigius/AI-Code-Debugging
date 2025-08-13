@@ -92,8 +92,8 @@ export default function Home() {
     setIsExecuting(false);
   };
 
-  const handleDismissAnalysisItem = (itemToDismiss: {line: number; message: string}) => {
-    setAnalysis(prev => prev.filter(item => !(item.line === itemToDismiss.line && item.message === itemToDismiss.message)));
+  const handleDismissAnalysisItem = (itemToDismiss: {startLine: number; message: string}) => {
+    setAnalysis(prev => prev.filter(item => !(item.startLine === itemToDismiss.startLine && item.message === itemToDismiss.message)));
   };
 
   const errors = analysis.filter(a => a.severity === 'error');
@@ -183,7 +183,7 @@ export default function Home() {
                                             {suggestions.map((item, index) => (
                                                 <li key={`suggestion-${index}`} className="flex justify-between items-start text-sm p-2 bg-yellow-100 rounded-none">
                                                     <div>
-                                                        <span className="font-bold">L{item.line}:</span> {item.message}
+                                                        <span className="font-bold">L{item.startLine}:</span> {item.message}
                                                     </div>
                                                     <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
                                                         <X className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function Home() {
                                         {errors.map((item, index) => (
                                             <li key={`error-${index}`} className="flex justify-between items-start text-sm p-2 bg-red-100 rounded-none">
                                                 <div>
-                                                    <span className="font-bold">L{item.line}:</span> {item.message}
+                                                    <span className="font-bold">L{item.startLine}:</span> {item.message}
                                                 </div>
                                                 <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
                                                     <X className="h-4 w-4" />
@@ -220,7 +220,7 @@ export default function Home() {
                                         {suggestions.map((item, index) => (
                                             <li key={`suggestion-${index}`} className="flex justify-between items-start text-sm p-2 bg-yellow-100 rounded-none">
                                                 <div>
-                                                    <span className="font-bold">L{item.line}:</span> {item.message}
+                                                    <span className="font-bold">L{item.startLine}:</span> {item.message}
                                                 </div>
                                                 <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
                                                     <X className="h-4 w-4" />
@@ -259,5 +259,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

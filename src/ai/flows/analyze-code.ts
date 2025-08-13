@@ -19,7 +19,10 @@ export type AnalyzeCodeInput = z.infer<typeof AnalyzeCodeInputSchema>;
 
 const AnalyzeCodeOutputSchema = z.array(
   z.object({
-    line: z.number().describe('The line number where the issue exists.'),
+    startLine: z.number().describe('The starting line number of the issue.'),
+    startColumn: z.number().describe('The starting column number of the issue.'),
+    endLine: z.number().describe('The ending line number of the issue.'),
+    endColumn: z.number().describe('The ending column number of the issue.'),
     severity: z
       .enum(['error', 'suggestion'])
       .describe('The severity of the issue (error or suggestion).'),
@@ -36,7 +39,23 @@ const analyzeCodePrompt = ai.definePrompt({
   name: 'analyzeCodePrompt',
   input: {schema: AnalyzeCodeInputSchema},
   output: {schema: AnalyzeCodeOutputSchema},
-  prompt: `You are an expert code review assistant. Analyze the following code for bugs and areas for improvement. Your task is to identify issues and return them in a structured JSON array format. Each object in the array should contain: a 'line' number, a 'severity' ('error' for breaking issues, 'suggestion' for improvements), and a 'message' explaining the issue. Do not suggest adding docstrings or comments. Do not include any text, explanations, or markdown formatting outside of the JSON array itself. Here is the code:\n\n\`\`\`\n{{{code}}}\n\`\`\`\n`,
+  prompt: `You are an expert code review assistant. Analyze the following code for bugs and areas for improvement. Your task is to identify issues and return them in a structured JSON array format. For each issue, provide the precise location with start and end line and column numbers.
+
+Each object in the array must contain:
+- 'startLine': The line number where the issue begins.
+- 'startColumn': The column number on the start line where the issue begins.
+- 'endLine': The line number where the issue ends.
+- 'endColumn': The column number on the end line where the issue ends.
+- 'severity': 'error' for breaking issues, 'suggestion' for improvements.
+- 'message': A clear explanation of the issue.
+
+Do not suggest adding docstrings or comments. Do not include any text, explanations, or markdown formatting outside of the JSON array itself.
+
+Here is the code:
+\`\`\`
+{{{code}}}
+\`\`\`
+`,
 });
 
 const analyzeCodeFlow = ai.defineFlow(
