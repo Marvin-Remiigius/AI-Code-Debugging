@@ -1,10 +1,10 @@
-import { Code2 } from 'lucide-react';
+import Logo from './Logo';
 
 export default function Header() {
   return (
     <header className="flex-shrink-0 border-b border-gray-300 px-4 py-3 md:px-6">
       <div className="flex items-center gap-3">
-        <Code2 className="h-7 w-7 text-black" />
+        <Logo className="h-8 w-8 text-black" />
         <div>
           <h1 className="text-xl font-bold text-black">
             Budditor
@@ -15,5 +15,3 @@ export default function Header() {
     </header>
   );
 }
-
-    

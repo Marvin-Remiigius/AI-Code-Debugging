@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const defaultCode = `// Your C or Python code here!`;
 const ANALYSIS_INTERVAL = 45; // in seconds
@@ -30,6 +31,7 @@ type OutputLine = {
 };
 
 export default function Home() {
+  const [appLoading, setAppLoading] = useState(true);
   const [code, setCode] = useState<string>(defaultCode);
   const [userInput, setUserInput] = useState<string>('');
   const [analysis, setAnalysis] = useState<AnalyzeCodeOutput>([]);
@@ -44,6 +46,14 @@ export default function Home() {
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [countdown, setCountdown] = useState(ANALYSIS_INTERVAL);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 2000); // Show loading screen for 2 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
 
   const resetCountdown = () => {
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
@@ -147,6 +157,11 @@ export default function Home() {
   const suggestions = analysis.filter(a => a.severity === 'suggestion');
 
   const isRunDisabled = isLoading || isExecuting || !code;
+  
+  if (appLoading) {
+    return <LoadingScreen />;
+  }
+
 
   return (
     <div className="flex flex-col h-screen bg-white text-black font-mono">
