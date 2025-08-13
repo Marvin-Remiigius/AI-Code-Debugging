@@ -1,45 +1,35 @@
 import React from 'react';
+import { cn } from "@/lib/utils";
 
 const Logo = ({ className }: { className?: string }) => {
   return (
     <svg
-      className={className}
-      viewBox="0 0 128 128"
+      className={cn("text-black", className)}
+      viewBox="0 0 180.872 180.872"
       xmlns="http://www.w3.org/2000/svg"
-      fill="none"
+      fill="currentColor" // Set fill to currentColor to allow color changes via CSS
     >
-      <path
-        stroke="#000"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="8"
-        d="M40 80V56a24 24 0 0 1 24-24h0a24 24 0 0 1 24 24v24"
-      ></path>
-      <path
-        stroke="#000"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="8"
-        d="M40 80h48v16a8 8 0 0 1-8 8H48a8 8 0 0 1-8-8V80Z"
-      ></path>
-      <path
-        fill="#000"
-        d="M57 76a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm18-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-      ></path>
-      <path
-        stroke="#000"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="8"
-        d="M56 92h16"
-      ></path>
-      <path
-        stroke="#000"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="8"
-        d="M64 32v-8m0-4a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
-      ></path>
+      {/* The SVG code has been updated to the new logo.
+        The original SVG attributes like version, id, x, y, and xml:space have been removed 
+        as they are not needed for inline SVGs in React.
+        The style attribute has also been removed.
+      */}
+      <g>
+        <path d="M90.437,76.286c-24.328,0-44.12,19.793-44.12,44.121c0,14.227,11.58,25.802,25.814,25.802
+          c7.148,0,13.627-2.921,18.305-7.632c4.677,4.711,11.154,7.632,18.301,7.632c14.229,0,25.805-11.575,25.805-25.802
+          C134.543,96.079,114.757,76.286,90.437,76.286z M108.738,131.209c-5.956,0-10.801-4.846-10.801-10.802c0-4.142-3.358-7.5-7.5-7.5
+          c-4.142,0-7.5,3.358-7.5,7.5c0,5.956-4.847,10.802-10.806,10.802c-5.963,0-10.814-4.846-10.814-10.802
+          c0-16.058,13.063-29.121,29.12-29.121c16.049,0,29.105,13.064,29.105,29.121C119.543,126.364,114.695,131.209,108.738,131.209z"/>
+        <path d="M158.997,0.377c-3.076-1.012-6.455,0.063-8.379,2.669l-25.038,33.91c-10.743-5.839-22.756-8.897-35.139-8.897
+          c-12.382,0-24.396,3.058-35.139,8.898L30.253,3.045c-1.925-2.606-5.303-3.682-8.378-2.668C18.799,1.39,16.72,4.263,16.72,7.501
+          v99.655c0,40.647,33.071,73.716,73.721,73.716c40.645,0,73.711-33.069,73.711-73.716V7.501
+          C164.152,4.262,162.073,1.39,158.997,0.377z M149.152,107.156c0,32.376-26.337,58.716-58.711,58.716
+          c-32.379,0-58.721-26.34-58.721-58.716V30.278l15.586,21.101c2.392,3.237,6.91,4.01,10.241,1.752
+          c9.719-6.589,21.094-10.071,32.893-10.071c11.801,0,23.176,3.482,32.895,10.071c3.333,2.259,7.851,1.484,10.242-1.753
+          l15.574-21.092V107.156z"/>
+        <path d="M90.433,96.144c-6.12,0-11.1,4.975-11.1,11.09c0,1.104,0.896,2,2,2h18.189c1.104,0,2-0.896,2-2
+          C101.523,101.118,96.548,96.144,90.433,96.144z"/>
+      </g>
     </svg>
   );
 };
