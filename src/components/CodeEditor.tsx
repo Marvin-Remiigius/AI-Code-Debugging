@@ -15,9 +15,10 @@ interface CodeEditorProps {
   code: string;
   onCodeChange: (value: string | undefined) => void;
   analysis: AnalysisResult[];
+  language: string;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis, language }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof monaco | null>(null);
   const decorationsRef = useRef<string[]>([]);
@@ -34,17 +35,23 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis })
     if (!editor || !monacoInstance) return;
 
     // Update decorations
-    const newDecorations = analysis.map(item => ({
-      range: new monacoInstance.Range(item.line, 1, item.line, 1),
-      options: {
-        isWholeLine: true,
-        className: item.severity === 'error' ? 'line-error-highlight' : 'line-suggestion-highlight',
-        overviewRuler: {
-          color: item.severity === 'error' ? 'hsl(var(--destructive) / 0.5)' : 'hsl(var(--chart-4) / 0.5)',
-          position: monacoInstance.editor.OverviewRulerLane.Right,
-        }
-      },
-    }));
+    const newDecorations = analysis.map(item => {
+      const lineContent = editor.getModel()?.getLineContent(item.line) || '';
+      const startColumn = (lineContent.match(/\S/)?.index ?? 0) + 1; // First non-whitespace char
+      const endColumn = lineContent.length + 1;
+
+      return {
+        range: new monacoInstance.Range(item.line, startColumn, item.line, endColumn),
+        options: {
+          className: item.severity === 'error' ? 'inline-error-highlight' : 'inline-suggestion-highlight',
+          overviewRuler: {
+            color: item.severity === 'error' ? 'hsl(var(--destructive) / 0.5)' : 'hsl(var(--chart-4) / 0.5)',
+            position: monacoInstance.editor.OverviewRulerLane.Right,
+          },
+          stickiness: monacoInstance.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      };
+    });
 
     decorationsRef.current = editor.deltaDecorations(
       decorationsRef.current,
@@ -55,7 +62,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis })
     if (hoverProviderRef.current) {
       hoverProviderRef.current.dispose();
     }
-    hoverProviderRef.current = monacoInstance.languages.registerHoverProvider('javascript', {
+    hoverProviderRef.current = monacoInstance.languages.registerHoverProvider(language, {
       provideHover: (model, position) => {
         const issue = analysis.find(a => a.line === position.lineNumber);
         if (issue) {
@@ -70,13 +77,18 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onCodeChange, analysis })
         return null;
       },
     });
+    
+    // Cleanup on unmount
+    return () => {
+        hoverProviderRef.current?.dispose();
+    }
 
-  }, [analysis]);
+  }, [analysis, language]);
 
   return (
     <Editor
       height="100%"
-      language="javascript"
+      language={language}
       theme="vs-dark"
       value={code}
       onChange={onCodeChange}

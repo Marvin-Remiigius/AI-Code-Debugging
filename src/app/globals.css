@@ -88,13 +88,13 @@ body {
 }
 
 @layer utilities {
-  .line-error-highlight {
+  .inline-error-highlight {
     background-color: hsl(var(--destructive) / 0.2);
-    width: 100%;
+    border-bottom: 2px solid hsl(var(--destructive));
   }
-  .line-suggestion-highlight {
-    background-color: hsl(var(--chart-4) / 0.2);
-    width: 100%;
+  .inline-suggestion-highlight {
+     background-color: hsl(var(--chart-4) / 0.2);
+     border-bottom: 2px solid hsl(var(--chart-4));
   }
   .monaco-editor .hover-row .markdown-hover {
     max-width: 500px !important;
