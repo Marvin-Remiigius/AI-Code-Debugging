@@ -43,29 +43,29 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 231 58% 37%;
+    --foreground: 220 20% 90%;
+    --card: 231 58% 32%;
+    --card-foreground: 220 20% 90%;
+    --popover: 231 58% 32%;
+    --popover-foreground: 220 20% 90%;
+    --primary: 231 48% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 231 39% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 231 39% 50%;
+    --muted-foreground: 220 20% 70%;
+    --accent: 231 48% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 231 39% 50%;
+    --input: 231 39% 50%;
+    --ring: 231 48% 60%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
+    --chart-4: 43 74% 66%;
     --chart-5: 340 75% 55%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -84,5 +84,19 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .line-error-highlight {
+    background-color: hsl(var(--destructive) / 0.2);
+    width: 100%;
+  }
+  .line-suggestion-highlight {
+    background-color: hsl(var(--chart-4) / 0.2);
+    width: 100%;
+  }
+  .monaco-editor .hover-row .markdown-hover {
+    max-width: 500px !important;
   }
 }
