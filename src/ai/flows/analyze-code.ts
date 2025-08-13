@@ -36,7 +36,7 @@ const analyzeCodePrompt = ai.definePrompt({
   name: 'analyzeCodePrompt',
   input: {schema: AnalyzeCodeInputSchema},
   output: {schema: AnalyzeCodeOutputSchema},
-  prompt: `You are an expert code review assistant. Analyze the following code for bugs and areas for improvement. Your task is to identify issues and return them in a structured JSON array format. Each object in the array should contain: a 'line' number, a 'severity' ('error' for breaking issues, 'suggestion' for improvements), and a 'message' explaining the issue. Do not include any text, explanations, or markdown formatting outside of the JSON array itself. Here is the code:\n\n\`\`\`\n{{{code}}}\n\`\`\`\n`,
+  prompt: `You are an expert code review assistant. Analyze the following code for bugs and areas for improvement. Your task is to identify issues and return them in a structured JSON array format. Each object in the array should contain: a 'line' number, a 'severity' ('error' for breaking issues, 'suggestion' for improvements), and a 'message' explaining the issue. Do not suggest adding docstrings or comments. Do not include any text, explanations, or markdown formatting outside of the JSON array itself. Here is the code:\n\n\`\`\`\n{{{code}}}\n\`\`\`\n`,
 });
 
 const analyzeCodeFlow = ai.defineFlow(

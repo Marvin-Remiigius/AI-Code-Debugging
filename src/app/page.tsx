@@ -168,6 +168,11 @@ export default function Home() {
                             <div className="text-center text-gray-500 pt-10">Analyzing...</div>
                         ) : analysis.length > 0 ? (
                            <div className="space-y-4">
+                            {errors.length === 0 && (
+                                <div className="text-center text-green-600 font-bold pt-10 pb-4">
+                                    Your code is good to go!!
+                                </div>
+                            )}
                             {errors.length > 0 && (
                                 <div>
                                     <h3 className="font-semibold mb-2 flex items-center text-red-600"><AlertCircle className="mr-2" /> Errors</h3>
@@ -203,7 +208,7 @@ export default function Home() {
                                 </div>
                             )}
                             </div>
-                        ) : analysisRun ? (
+                        ) : analysisRun && errors.length === 0 ? (
                             <div className="text-center text-green-600 font-bold pt-10">
                                 Your code is good to go!!
                             </div>
