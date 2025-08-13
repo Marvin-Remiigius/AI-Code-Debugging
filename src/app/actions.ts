@@ -11,6 +11,7 @@ const AnalyzeActionInputSchema = z.object({
 const ExecuteActionInputSchema = z.object({
   code: z.string().min(1, "Code cannot be empty."),
   language: z.string().min(1, "Language cannot be empty."),
+  stdin: z.string().optional(),
 });
 
 type AnalyzeActionResponse = {
@@ -40,7 +41,7 @@ type ExecuteActionResponse = {
     error?: string;
 };
 
-export async function runCodeExecution(input: { code: string, language: string }): Promise<ExecuteActionResponse> {
+export async function runCodeExecution(input: { code: string, language: string, stdin?: string }): Promise<ExecuteActionResponse> {
     const parsed = ExecuteActionInputSchema.safeParse(input);
     if (!parsed.success) {
         return { success: false, error: parsed.error.errors.map((e) => e.message).join(", ") };
@@ -54,3 +55,5 @@ export async function runCodeExecution(input: { code: string, language: string }
         return { success: false, error: "An unexpected error occurred during execution." };
     }
 }
+
+    

@@ -3,7 +3,7 @@
 /**
  * @fileOverview Simulates code execution using the Gemini API.
  *
- * - executeCode - A function that takes code and language, and returns the simulated output.
+ * - executeCode - A function that takes code, language, and optional stdin, and returns the simulated output.
  * - ExecuteCodeInput - The input type for the executeCode function.
  * - ExecuteCodeOutput - The return type for the executeCode function.
  */
@@ -14,6 +14,7 @@ import {z} from 'genkit';
 const ExecuteCodeInputSchema = z.object({
   code: z.string().describe('The code to execute.'),
   language: z.string().describe('The programming language of the code.'),
+  stdin: z.string().optional().describe('The standard input to provide to the program.'),
 });
 export type ExecuteCodeInput = z.infer<typeof ExecuteCodeInputSchema>;
 
@@ -36,6 +37,13 @@ Code:
 \`\`\`{{{language}}}
 {{{code}}}
 \`\`\`
+
+{{#if stdin}}
+Use the following as the standard input (stdin) for the program:
+\`\`\`
+{{{stdin}}}
+\`\`\`
+{{/if}}
 `,
 });
 
@@ -50,3 +58,5 @@ const executeCodeFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

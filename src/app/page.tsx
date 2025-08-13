@@ -18,22 +18,10 @@ import {
 import { Card, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
-const defaultCode = `function factorial(n) {
-  if (n === 0) {
-    return 1;
-  } else {
-    return n * factorial(n - 1);
-  }
-}
-
-console.log('Factorial of 5 is:', factorial(5));
-
-for (var i = 1; i < 5; i++) {
-  console.log("Hello, world!");
-}
-
-const unusedVar = 10;`;
+const defaultCode = `// Your C or Python code here!`;
 
 type OutputLine = {
   type: 'log' | 'error';
@@ -42,10 +30,11 @@ type OutputLine = {
 
 export default function Home() {
   const [code, setCode] = useState<string>(defaultCode);
+  const [userInput, setUserInput] = useState<string>('');
   const [analysis, setAnalysis] = useState<AnalyzeCodeOutput>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('python');
   const [output, setOutput] = useState<OutputLine[]>([]);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('results');
@@ -59,7 +48,12 @@ export default function Home() {
     try {
       const result = await runCodeAnalysis({ code });
       if (result.success && result.data) {
-        setAnalysis(result.data);
+        if (result.data.filter(i => i.severity === 'error').length === 0 && result.data.filter(i => i.severity === 'suggestion').length > 0) {
+          const suggestionsOnly = result.data.filter(i => i.severity === 'suggestion');
+          setAnalysis(suggestionsOnly);
+        } else {
+          setAnalysis(result.data);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -84,9 +78,8 @@ export default function Home() {
     setActiveTab('output');
 
     try {
-        const result = await runCodeExecution({ code, language });
+        const result = await runCodeExecution({ code, language, stdin: userInput });
         if (result.success && result.data) {
-            // Simple check to see if the output contains common error phrases
             const isError = /error|exception|failed|traceback/i.test(result.data.output.substring(0, 100));
             setOutput([{ type: isError ? 'error' : 'log', message: result.data.output }]);
         } else {
@@ -96,14 +89,12 @@ export default function Home() {
         setOutput([{ type: 'error', message: 'Could not connect to the execution service.' }]);
     }
 
-
     setIsExecuting(false);
   };
 
   const handleDismissAnalysisItem = (itemToDismiss: {line: number; message: string}) => {
     setAnalysis(prev => prev.filter(item => !(item.line === itemToDismiss.line && item.message === itemToDismiss.message)));
   };
-
 
   const errors = analysis.filter(a => a.severity === 'error');
   const suggestions = analysis.filter(a => a.severity === 'suggestion');
@@ -115,13 +106,25 @@ export default function Home() {
       <Header />
       <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 md:p-6 overflow-hidden">
         <div className="md:col-span-2 flex flex-col gap-4">
-            <div className="flex-1 relative rounded-none border-2 border-dashed border-gray-400 overflow-hidden shadow-none">
-                <CodeEditor 
-                    code={code} 
-                    onCodeChange={(value) => setCode(value || '')} 
-                    analysis={analysis}
-                    language={language}
-                />
+            <div className="flex-1 flex flex-col gap-2">
+                <div className="flex-1 relative rounded-none border-2 border-dashed border-gray-400 overflow-hidden shadow-none">
+                    <CodeEditor 
+                        code={code} 
+                        onCodeChange={(value) => setCode(value || '')} 
+                        analysis={analysis}
+                        language={language}
+                    />
+                </div>
+                <div className="flex-shrink-0">
+                  <Label htmlFor="userInput" className="text-xs font-bold uppercase text-gray-500">Input (stdin)</Label>
+                  <Textarea
+                    id="userInput"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Enter input for your program here..."
+                    className="mt-1 bg-white border-gray-300 rounded-none h-24"
+                  />
+                </div>
             </div>
             <div className="flex-shrink-0 flex items-center justify-between">
                 <div className="w-40">
@@ -130,10 +133,8 @@ export default function Home() {
                             <SelectValue placeholder="Language" />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-black border-gray-500 rounded-none">
-                            <SelectItem value="javascript">JavaScript</SelectItem>
                             <SelectItem value="python">Python</SelectItem>
                             <SelectItem value="c">C</SelectItem>
-                            <SelectItem value="java">Java</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -166,13 +167,35 @@ export default function Home() {
                       <ScrollArea className="h-full px-6">
                         {isLoading ? (
                             <div className="text-center text-gray-500 pt-10">Analyzing...</div>
-                        ) : analysis.length > 0 ? (
-                           <div className="space-y-4">
-                            {errors.length === 0 && (
+                        ) : !analysisRun ? (
+                             <div className="text-center text-gray-500 pt-10">
+                                Run analysis to see results.
+                            </div>
+                        ) : errors.length === 0 ? (
+                            <div className="space-y-4">
                                 <div className="text-center text-green-600 font-bold pt-10 pb-4">
                                     Your code is good to go!!
                                 </div>
-                            )}
+                                {suggestions.length > 0 && (
+                                    <div>
+                                        <h3 className="font-semibold mb-2 flex items-center text-yellow-600"><Lightbulb className="mr-2" /> Suggestions</h3>
+                                        <ul className="space-y-2">
+                                            {suggestions.map((item, index) => (
+                                                <li key={`suggestion-${index}`} className="flex justify-between items-start text-sm p-2 bg-yellow-100 rounded-none">
+                                                    <div>
+                                                        <span className="font-bold">L{item.line}:</span> {item.message}
+                                                    </div>
+                                                    <Button variant="ghost" size="icon" className="h-5 w-5 ml-2 shrink-0" onClick={() => handleDismissAnalysisItem(item)}>
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                           <div className="space-y-4">
                             {errors.length > 0 && (
                                 <div>
                                     <h3 className="font-semibold mb-2 flex items-center text-red-600"><AlertCircle className="mr-2" /> Errors</h3>
@@ -208,14 +231,6 @@ export default function Home() {
                                 </div>
                             )}
                             </div>
-                        ) : analysisRun && errors.length === 0 ? (
-                            <div className="text-center text-green-600 font-bold pt-10">
-                                Your code is good to go!!
-                            </div>
-                        ) : (
-                            <div className="text-center text-gray-500 pt-10">
-                                Run analysis to see results.
-                            </div>
                         )}
                       </ScrollArea>
                     </TabsContent>
@@ -244,3 +259,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

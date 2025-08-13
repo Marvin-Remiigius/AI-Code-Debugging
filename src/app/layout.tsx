@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'CodeSight AI',
-  description: 'AI-powered code analysis and debugging.',
+  title: 'Budditor',
+  description: 'Your AI Code editor buddy',
 };
 
 export default function RootLayout({
@@ -23,3 +23,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
